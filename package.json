@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ckrvxr/pi-extra-highlights.git"
+    "url": "git+https://github.com/Ckrvxr/pi-extra-highlights.git"
   },
   "type": "module",
   "files": ["README.md", "LICENSE", "src"],
