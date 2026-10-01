@@ -4,18 +4,14 @@ import {
   createEditToolDefinition,
   getLanguageFromPath,
   highlightCode,
+  renderDiff,
 } from "@earendil-works/pi-coding-agent";
 import { Box, Container, Text, colorToHex, foregroundAnsi, parseColor } from "@earendil-works/pi-tui";
 import bashGrammar from "shiki/langs/bash.mjs";
 import { createHighlighterCoreSync } from "shiki/core";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 import { buildPiShikiTheme, getPiShikiThemeName, renderShikiTokens, type PiShikiPalette } from "./shiki-rendering.ts";
-import { MAX_BASH_COMMAND_CHARS, MAX_EDIT_DIFF_CHARS, extractTextContent, highlightBashCommand, highlightEditDiff, restoreBaseForeground, styleEditDiffLine } from "./rendering.ts";
-
-function getTextValue(component: Text): string | undefined {
-  // Text has no public raw-text getter; release its cached wide render after extraction.
-  return extractTextContent(component, 1_000_000, MAX_EDIT_DIFF_CHARS);
-}
+import { MAX_BASH_COMMAND_CHARS, prepareEditDiffForHighlighting, highlightBashCommand, highlightEditDiff, restoreBaseForeground, styleEditDiffLine } from "./rendering.ts";
 
 function hashText(text: string): string {
   let first = 0x811c9dc5;
@@ -148,31 +144,35 @@ export default async function (pi: ExtensionAPI) {
     if (!language) return;
 
     const textChildren = component.children.filter((child): child is Text => child instanceof Text);
-    for (const preview of textChildren.slice(1)) {
-      const diff = getTextValue(preview);
-      if (diff === undefined) return;
+    const preview = textChildren[1];
+    if (!preview) return;
 
-      const key = `${language}:${editThemeKey(theme)}:${hashText(diff)}`;
-      const cached = editHighlights.get(component);
-      if (cached?.key === key) {
-        preview.setText(cached.highlighted);
-        component.invalidate();
-        return;
-      }
+    // Reuse Pi's renderer output without Text.render(), which pads every line to its render width.
+    const diff = prepareEditDiffForHighlighting(
+      (component as Box & { preview?: unknown }).preview,
+      renderDiff,
+    );
+    if (diff === undefined) return;
 
-      const highlighted = highlightEditDiff(
-        diff,
-        language,
-        highlightCode,
-        (kind, prefix, code) => styleEditDiffLine(theme, kind, prefix, code),
-      );
-      if (highlighted === undefined) continue;
-
-      editHighlights.set(component, { key, highlighted });
-      preview.setText(highlighted);
+    const key = `${language}:${editThemeKey(theme)}:${hashText(diff)}`;
+    const cached = editHighlights.get(component);
+    if (cached?.key === key) {
+      preview.setText(cached.highlighted);
       component.invalidate();
       return;
     }
+
+    const highlighted = highlightEditDiff(
+      diff,
+      language,
+      highlightCode,
+      (kind, prefix, code) => styleEditDiffLine(theme, kind, prefix, code),
+    );
+    if (highlighted === undefined) return;
+
+    editHighlights.set(component, { key, highlighted });
+    preview.setText(highlighted);
+    component.invalidate();
   }
 
   pi.registerTool({

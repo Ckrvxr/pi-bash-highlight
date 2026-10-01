@@ -1,5 +1,4 @@
 export type HighlightCode = (code: string, language: string) => string[];
-export type RenderableText = { render: (width: number) => string[]; invalidate: () => void };
 export type DiffLineKind = "added" | "removed" | "context";
 export type StyleDiffLine = (kind: DiffLineKind, prefix: string, code: string) => string;
 export type DiffTheme = {
@@ -34,22 +33,16 @@ export function stripAnsi(text: string): string {
   return text.replace(ANSI_PATTERN, "");
 }
 
-export function extractTextContent(
-  component: RenderableText,
-  width: number,
-  maxChars: number,
+export function prepareEditDiffForHighlighting(
+  preview: unknown,
+  renderNativeDiff: (diff: string) => string,
 ): string | undefined {
-  try {
-    const lines = component.render(width);
-    let length = Math.max(0, lines.length - 1);
-    for (const line of lines) {
-      length += line.length;
-      if (length > maxChars) return undefined;
-    }
-    return lines.join("\n");
-  } finally {
-    component.invalidate();
-  }
+  if (!preview || typeof preview !== "object" || !("diff" in preview)) return undefined;
+  const sourceDiff = preview.diff;
+  if (typeof sourceDiff !== "string" || sourceDiff.length > MAX_EDIT_DIFF_CHARS) return undefined;
+
+  const renderedDiff = renderNativeDiff(sourceDiff);
+  return renderedDiff.length <= MAX_EDIT_DIFF_CHARS ? renderedDiff : undefined;
 }
 
 export function restoreBaseForeground(code: string, baseForeground: string): string {

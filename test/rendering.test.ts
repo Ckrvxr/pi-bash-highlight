@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { extractTextContent, highlightBashCommand, highlightEditDiff, restoreBaseForeground, stripAnsi, styleEditDiffLine } from "../src/rendering.ts";
+import { highlightBashCommand, highlightEditDiff, prepareEditDiffForHighlighting, restoreBaseForeground, stripAnsi, styleEditDiffLine } from "../src/rendering.ts";
 
 const highlighter = (code: string, language: string) =>
   code.split("\n").map((line) => `<${language}:${line}>`);
@@ -13,36 +13,26 @@ test("highlights the bash command as a complete multiline shell snippet", () => 
   );
 });
 
-test("releases Text render caches after extracting preview content", () => {
-  let cached = false;
-  const component = {
-    render: () => {
-      cached = true;
-      return ["one", "two"];
-    },
-    invalidate: () => {
-      cached = false;
-    },
-  };
+test("prepares the native Edit preview without layout padding", () => {
+  const diff = "-1 const answer = 1;\n+1 const answer = 2;";
+  const rendered = `\u001b[31m${diff}\u001b[0m`;
+  let received: string | undefined;
 
-  assert.equal(extractTextContent(component, 1_000_000, 100), "one\ntwo");
-  assert.equal(cached, false);
+  assert.equal(prepareEditDiffForHighlighting({ diff }, (input) => {
+    received = input;
+    return rendered;
+  }), rendered);
+  assert.equal(received, diff);
 });
 
-test("does not retain an oversized Text render cache", () => {
-  let cached = false;
-  const component = {
-    render: () => {
-      cached = true;
-      return ["x".repeat(20)];
-    },
-    invalidate: () => {
-      cached = false;
-    },
-  };
+test("leaves oversized Edit previews to Pi without rendering them", () => {
+  let renderCalls = 0;
 
-  assert.equal(extractTextContent(component, 1_000_000, 10), undefined);
-  assert.equal(cached, false);
+  assert.equal(prepareEditDiffForHighlighting({ diff: "x".repeat(256_001) }, () => {
+    renderCalls++;
+    return "";
+  }), undefined);
+  assert.equal(renderCalls, 0);
 });
 
 test("leaves oversized Bash commands unhighlighted", () => {
