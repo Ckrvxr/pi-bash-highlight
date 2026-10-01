@@ -1,6 +1,6 @@
 {
   "name": "pi-extra-highlights",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Pi extension that adds syntax highlighting to Bash and Edit tool previews.",
   "license": "Apache-2.0",
