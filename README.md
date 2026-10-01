@@ -1,0 +1,26 @@
+# pi-extra-highlights
+
+A minimal Pi extension that adds syntax highlighting to the native `bash` command preview and `edit` diff preview. Tool execution and result rendering are delegated to Pi's original tool definitions.
+
+- `bash`: uses Shiki's Bash grammar and maps token colors to the active Pi theme; only the command is highlighted, stdout/stderr are untouched.
+- `edit`: uses Pi's `write` renderer language detection (`getLanguageFromPath` / `highlightCode`) for the target path. Added/removed/context markers retain their original Pi diff colors. Unknown file types and oversized previews keep native rendering.
+- No changes to `write`, tool schemas, execution behavior, labels, or other UI elements.
+
+## Try it
+
+Install the dependency, then load it for one Pi session:
+
+```sh
+pnpm install
+pi --extension ./src/index.ts
+```
+
+## License
+
+Apache-2.0. See [LICENSE](./LICENSE).
+
+## Tests
+
+```sh
+pnpm test
+```
