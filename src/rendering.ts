@@ -11,8 +11,7 @@ type DiffRow = {
   prefix: string;
   code: string;
   inverseMask?: boolean[];
-  oldIndex?: number;
-  newIndex?: number;
+  contextIndex?: number;
 };
 
 type AnsiLine = { text: string; inverseMask: boolean[] };
@@ -174,8 +173,7 @@ export function highlightEditDiff(
   if (diff.length > MAX_EDIT_DIFF_CHARS) return undefined;
 
   const rows: DiffRow[] = [];
-  const oldLines: string[] = [];
-  const newLines: string[] = [];
+  const contextLines: string[] = [];
   let hasCodeRow = false;
 
   for (const styledLine of splitAnsiLines(diff)) {
@@ -195,31 +193,29 @@ export function highlightEditDiff(
     hasCodeRow = true;
     const source = normalizeCodeAndMask(rawCode, styledLine.inverseMask.slice(prefix.length));
     if (marker === "-") {
-      const oldIndex = oldLines.push(source.code) - 1;
-      rows.push({ kind: "removed", prefix, code: source.code, inverseMask: source.mask, oldIndex });
+      rows.push({ kind: "removed", prefix, code: source.code, inverseMask: source.mask });
     } else if (marker === "+") {
-      const newIndex = newLines.push(source.code) - 1;
-      rows.push({ kind: "added", prefix, code: source.code, inverseMask: source.mask, newIndex });
+      rows.push({ kind: "added", prefix, code: source.code, inverseMask: source.mask });
     } else {
-      const oldIndex = oldLines.push(source.code) - 1;
-      const newIndex = newLines.push(source.code) - 1;
-      rows.push({ kind: "context", prefix, code: source.code, inverseMask: source.mask, oldIndex, newIndex });
+      const contextIndex = contextLines.push(source.code) - 1;
+      rows.push({ kind: "context", prefix, code: source.code, inverseMask: source.mask, contextIndex });
     }
   }
 
   if (!hasCodeRow) return undefined;
 
-  const oldHighlighted = oldLines.length > 0 ? highlightCode(oldLines.join("\n"), language) : [];
-  const newHighlighted = newLines.length > 0 ? highlightCode(newLines.join("\n"), language) : [];
+  const highlightedContext = contextLines.length > 0
+    ? highlightCode(contextLines.join("\n"), language)
+    : [];
 
   return rows.map((row) => {
     if (row.kind === "raw" || row.kind === "marker") {
       return styleLine("context", row.prefix, "");
     }
 
-    const highlighted = row.kind === "removed"
-      ? oldHighlighted[row.oldIndex ?? -1]
-      : newHighlighted[row.newIndex ?? -1];
+    const highlighted = row.kind === "context"
+      ? highlightedContext[row.contextIndex ?? -1]
+      : row.code;
     const code = applyInverseMask(highlighted ?? row.code, row.code, row.inverseMask ?? []);
     return styleLine(row.kind, row.prefix, code);
   }).join("\n");

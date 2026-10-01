@@ -53,7 +53,7 @@ test("restores Pi's original foreground between syntax-highlighted bash tokens",
   );
 });
 
-test("highlights added, removed, and context code using the file language", () => {
+test("keeps added and removed code in solid diff colors while highlighting context", () => {
   const diff = [
     "-1 const answer = 1;",
     "+1 const answer = 2;",
@@ -63,14 +63,14 @@ test("highlights added, removed, and context code using the file language", () =
   assert.equal(
     highlightEditDiff(diff, "typescript", highlighter, styleDiffLine),
     [
-      "[removed]-1 <typescript:const answer = 1;>[/]",
-      "[added]+1 <typescript:const answer = 2;>[/]",
+      "[removed]-1 const answer = 1;[/]",
+      "[added]+1 const answer = 2;[/]",
       "[context] 2 <typescript:console.log(answer);>[/]",
     ].join("\n"),
   );
 });
 
-test("highlights each side of a changed block as its own source file", () => {
+test("syntax-highlights only context lines in a changed block", () => {
   const seen: Array<{ code: string; language: string }> = [];
   const recordingHighlighter = (code: string, language: string) => {
     seen.push({ code, language });
@@ -85,8 +85,7 @@ test("highlights each side of a changed block as its own source file", () => {
   );
 
   assert.deepEqual(seen, [
-    { code: "const oldValue = 1;\nreturn true;", language: "typescript" },
-    { code: "const newValue = 2;\nreturn true;", language: "typescript" },
+    { code: "return true;", language: "typescript" },
   ]);
 });
 
