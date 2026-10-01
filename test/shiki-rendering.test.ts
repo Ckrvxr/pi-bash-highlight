@@ -3,10 +3,10 @@ import test from "node:test";
 import bash from "shiki/langs/bash.mjs";
 import { createHighlighterCoreSync } from "shiki/core";
 import { createOnigurumaEngine } from "shiki/engine/oniguruma";
-import { stripAnsi } from "../src/rendering.ts";
 import { buildPiShikiTheme, getPiShikiThemeName, renderShikiTokens } from "../src/shiki-rendering.ts";
 
 const onigurumaEngine = await createOnigurumaEngine(import("shiki/wasm"));
+const stripAnsi = (text: string) => text.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "");
 
 const palette = {
   appearance: "dark" as const,

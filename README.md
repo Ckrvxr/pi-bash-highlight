@@ -1,9 +1,9 @@
 # pi-extra-highlights
 
-A minimal Pi extension that adds syntax highlighting to the native `bash` command preview and `edit` diff preview. Tool execution and result rendering are delegated to Pi's original tool definitions.
+A minimal Pi extension that adds syntax highlighting to the native `bash` command preview. Tool execution and result rendering are delegated to Pi's original tool definition.
 
 - `bash`: uses Shiki's Bash grammar and maps token colors to the active Pi theme; only the command is highlighted, stdout/stderr are untouched.
-- `edit`: uses Pi's `write` renderer language detection (`getLanguageFromPath` / `highlightCode`) for context lines. Added/removed lines stay solid green/red and retain Pi's inline changed-word styling. Unknown file types and oversized previews keep native rendering.
+- `edit`: uses Pi's native renderer unchanged; this extension does not add syntax highlighting to Edit diffs.
 - No changes to `write`, tool schemas, execution behavior, labels, or other UI elements.
 
 ## Try it
