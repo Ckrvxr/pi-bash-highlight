@@ -8,11 +8,10 @@ A minimal Pi extension that adds syntax highlighting to the native `bash` comman
 
 ## Try it
 
-Install the dependency, then load it for one Pi session:
+Load it for one Pi session without changing your Pi settings:
 
 ```sh
-pnpm install
-pi --extension ./src/index.ts
+pi -e npm:pi-extra-highlights
 ```
 
 ## License
