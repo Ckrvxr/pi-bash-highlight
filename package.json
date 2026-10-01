@@ -1,12 +1,12 @@
 {
-  "name": "pi-extra-highlights",
-  "version": "0.1.1",
+  "name": "pi-bash-highlight",
+  "version": "0.1.0",
   "private": false,
   "description": "Pi extension that adds syntax highlighting to Bash tool previews.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ckrvxr/pi-extra-highlights.git"
+    "url": "git+https://github.com/Ckrvxr/pi-bash-highlight.git"
   },
   "type": "module",
   "files": ["README.md", "LICENSE", "src"],

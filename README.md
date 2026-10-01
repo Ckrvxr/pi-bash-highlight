@@ -1,4 +1,4 @@
-# pi-extra-highlights
+# pi-bash-highlight
 
 A minimal Pi extension that adds syntax highlighting to the native `bash` command preview. Tool execution and result rendering are delegated to Pi's original tool definition.
 
@@ -11,7 +11,7 @@ A minimal Pi extension that adds syntax highlighting to the native `bash` comman
 Load it for one Pi session without changing your Pi settings:
 
 ```sh
-pi -e npm:pi-extra-highlights
+pi -e npm:pi-bash-highlight
 ```
 
 ## License
